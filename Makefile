@@ -1,4 +1,4 @@
-BUILD_FILES=index.coffee
+BUILD_FILES=redisrqs.coffee
 DISTRIBUTION_DIR=dist
 
 compile:
@@ -12,5 +12,11 @@ package: compile
 	@echo "Packaging the scripts..."
 	@coffee -c -o $(DISTRIBUTION_DIR)/ --no-header $(BUILD_FILES)
 	@echo "Finished."
+
+transpile_coffeescripts:
+	./node_modules/.bin/coffee --compile --map --no-header --watch ./
+
+transpile: transpile_coffeescripts
+
 
 .PHONY: compile package
