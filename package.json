@@ -2,9 +2,9 @@
   "name": "redisrqs",
   "version": "1.0.0",
   "description": "Reliable queuing system using Redis as the message store.",
-  "main": "index.js",
+  "main": "redisrqs.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha -R spec"
+    "test": "./node_modules/.bin/mocha -R spec --exit"
   },
   "repository": {
     "type": "git",
@@ -17,18 +17,18 @@
     "reliable messaging"
   ],
   "dependencies": {
-    "async": "^2.1.4",
-    "bluebird": "^3.4.6",
-    "chai": "^3.5.0",
-    "ioredis": "^2.4.3",
-    "mocha": "^3.2.0",
+    "async": "^2.6.1",
+    "chai": "^4.2.0",
+    "coffeescript": "^2.3.2",
+    "ioredis": "^4.2.0",
+    "mocha": "^5.2.0",
     "moment": "^2.17.1",
     "uuid": "^3.0.1"
   },
   "author": "Amir Khawaja <khawaja.amir@gmail.com>",
   "license": "mit",
   "devDependencies": {
-    "chai": "^3.2.0",
-    "mocha": "^2.2.5"
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
   }
 }
