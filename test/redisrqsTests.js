@@ -22,7 +22,7 @@
   });
 
   describe("RedisRQS Tests:", function() {
-    after(function(done) {
+    afterEach(function(done) {
       queue.drainQueues().then(function() {
         return done();
       });
@@ -30,7 +30,7 @@
     before(function() {
       return queue.on("redisrqs:enqueue", function() {
         return queue.getPendingQueueSize().then(function(count) {
-          return count.should.equal(1);
+          return assert.isAtLeast(count, 1);
         });
       });
     });
@@ -68,9 +68,42 @@
       queue.enqueue("foo", message).then(function(result) {
         message = JSON.parse(JSON.parse(result[1]).data);
         message.topic.should.equal(obj.topic);
+        message.data.should.equal(obj.data);
+        return done();
+      }).catch(function(err) {
+        return done(err);
+      });
+      queue.once("redisrqs:enqueue", function(result) {
+        message = JSON.parse(result.message);
+        message.topic.should.equal(obj.topic);
+        return message.data.should.equal(obj.data);
+      });
+      return queue.once("foo", function(result) {
+        uuid = result.uuid;
+        message = JSON.parse(result.message);
+        message.topic.should.equal(obj.topic);
+        return message.data.should.equal(obj.data);
+      });
+    });
+    it("Two messages must exist with the same topic name", function(done) {
+      var message, obj, topic, uuid;
+      uuid = "";
+      topic = "foo";
+      obj = {
+        topic: "Test",
+        data: "This is a test message"
+      };
+      message = JSON.stringify(obj);
+      queue.enqueue(topic, message).then(function() {
+        message = JSON.stringify(obj);
+        return queue.enqueue(topic, message);
+      }).then(function(result) {
+        message = JSON.parse(JSON.parse(result[1]).data);
+        message.topic.should.equal(obj.topic);
         return message.data.should.equal(obj.data);
       }).then(function() {
-        return queue.drainQueues().then(function() {
+        return queue.getPendingQueueSize().then(function(result) {
+          result.should.equal(2);
           return done();
         });
       }).catch(function(err) {
