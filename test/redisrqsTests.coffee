@@ -15,7 +15,7 @@ queue = new RedisRQS
     sweepInterval: 10000
 
 describe "RedisRQS Tests:", ->
-  after (done) ->
+  afterEach (done) ->
     queue.drainQueues().then -> done()
     return
 
@@ -23,7 +23,7 @@ describe "RedisRQS Tests:", ->
     queue.on "redisrqs:enqueue", ->
       queue.getPendingQueueSize()
         .then (count) ->
-          count.should.equal 1
+          assert.isAtLeast count, 1
 
   it "Should be a class of type RedisRQS", (done) ->
     assert.instanceOf queue, RedisRQS
@@ -55,8 +55,42 @@ describe "RedisRQS Tests:", ->
         message = JSON.parse JSON.parse(result[1]).data
         message.topic.should.equal obj.topic
         message.data.should.equal obj.data
+        done()
+      .catch (err) ->
+        done(err)
+
+    queue.once "redisrqs:enqueue", (result) ->
+      message = JSON.parse result.message
+      message.topic.should.equal obj.topic
+      message.data.should.equal obj.data
+
+    queue.once "foo", (result) ->
+      uuid = result.uuid
+      message = JSON.parse result.message
+      message.topic.should.equal obj.topic
+      message.data.should.equal obj.data
+
+  it "Two messages must exist with the same topic name", (done) ->
+    uuid = ""
+    topic = "foo"
+    obj =
+      topic: "Test",
+      data: "This is a test message"
+
+    message = JSON.stringify obj
+
+    queue.enqueue topic, message
       .then ->
-        queue.drainQueues().then -> done()
+        message = JSON.stringify obj
+        queue.enqueue topic, message
+      .then (result) ->
+        message = JSON.parse JSON.parse(result[1]).data
+        message.topic.should.equal obj.topic
+        message.data.should.equal obj.data
+      .then ->
+        queue.getPendingQueueSize().then (result) ->
+          result.should.equal 2
+          done()
       .catch (err) ->
         done(err)
 
